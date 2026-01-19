@@ -1,3 +1,6 @@
+#[warn(clippy::pedantic)]
+/// client side
+
 use std::io;
 use std::io::Write;
 use std::net::TcpStream;
