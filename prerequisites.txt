@@ -1,0 +1,23 @@
+Displaying HTML file from Chrome
+
+Problem Definition:
+I want a server program that responds HTTP message to send data of HTML file!
+
+Requirements:
+- Display HTML file on Chrome
+- Needs to accept an HTTP request message 
+- Parse the HTTP message 
+- Generate HTTP message
+- Send HTTP message (that displays the file)
+
+Architecture:
+-logic to generate an HTTP message from parsed message
+-logic to parse the accepted message so the generator
+ can generate a response message (parsing constraint?)
+-logic to accept HTTP request
+-logic to send the generated response message 
+ (this logic is probably going to be really short)
+
+- a container to hold the generated response message
+  
+
