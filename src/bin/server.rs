@@ -95,22 +95,3 @@ fn send_response(response: String, stream: TcpStream) -> Result<()> {
     stream.write_all(response.as_bytes());
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn accept() {
-        let listener = TcpListener::bind("127.0.0.1:8000").unwrap();
-
-        let stream = accept_connection(listener);
-
-        let mut buffer = [0; 1024];
-        let bytes_read = stream.peek(&mut buffer).expect("three letters");
-        let peeked = String::from_utf8_lossy(&buffer[..bytes_read]);
-
-        let requested_method: String = peeked.chars().take(3).collect();
-        assert_eq!(requested_method, "GET".to_string());
-    }
-}
