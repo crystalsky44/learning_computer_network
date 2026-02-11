@@ -1,6 +1,5 @@
 #[warn(clippy::pedantic)]
 /// client side
-
 use std::io;
 use std::io::Write;
 use std::net::TcpStream;
@@ -11,7 +10,6 @@ fn main() {
 
         let message = get_user_input("Enter your message");
         stream.write_all(message.as_bytes()).unwrap();
-
     } else {
         println!("Couldn't connect to the server...");
     }

@@ -1,7 +1,6 @@
 #[warn(clippy::pedantic)]
 /// server side
-
-use std::io::{Read, BufRead, BufReader};
+use std::io::{BufRead, BufReader, Read};
 use std::net::{TcpListener, TcpStream};
 
 use anyhow::Result;
@@ -35,7 +34,7 @@ fn run(listener: TcpListener) -> Result<String> {
     //
     // read the byte stream
     let raw_message = get_message(stream);
-    // 
+    //
     // parse the byte stream
     let parsed_message = parse_message(raw_message);
     //
@@ -60,16 +59,16 @@ fn accept_connection(listener: TcpListener) -> TcpStream {
 }
 
 fn get_message(stream: TcpStream) -> String {
-   let mut reader = BufReader::new(stream);
-   let mut message = String::new();
+    let mut reader = BufReader::new(stream);
+    let mut message = String::new();
 
-   // convert byte-stream to String
+    // convert byte-stream to String
 }
 
 // take the raw byte stream and parse the message
 fn parse_message(raw_message: String) -> String {
     // get the thrid line out of the raw_message
-    let parsing_line = raw_message.lines() 
+    let parsing_line = raw_message.lines();
     println!("{parsing_line:?}");
 
     // extract and return the 2nd element in the parsing_line
