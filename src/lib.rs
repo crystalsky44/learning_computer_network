@@ -32,7 +32,12 @@ fn get_message(stream: TcpStream) -> Vec<String> {
         .map(|line| line.unwrap())
         .collect();
 
+    println!("{request_message:?}");
     request_message
+}
+
+fn parse_message(raw_message: Vec<String>) -> String {
+    todo!()
 }
 
 #[cfg(test)]
@@ -61,9 +66,6 @@ mod tests {
         let request_message = get_message(stream);
 
         let tester: String = request_message[0].chars().take(3).collect();
-        assert_eq!(
-            "GET".to_string(),
-            tester
-        );
+        assert_eq!("GET".to_string(), tester);
     }
 }
