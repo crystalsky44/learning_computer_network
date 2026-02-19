@@ -1,6 +1,7 @@
 #[warn(clippy::pedantic)]
 /// server side
 use std::io::{BufRead, BufReader, Read, Write};
+use std::fs::File;
 use std::net::{TcpListener, TcpStream};
 
 use anyhow::Result;
@@ -30,13 +31,39 @@ fn get_message(stream: TcpStream) -> Vec<String> {
     let request_message: Vec<String> = reader
         .lines() 
         .map(|line| line.unwrap())
+        .take_while(|line| !line.is_empty())
         .collect();
 
-    println!("{request_message:?}");
+    println!("{request_message:#?}");
     request_message
 }
 
+// gets the name of file requested of.
+// "parse" should be more complicated. But for this project
+// I'm just getting the string to call the requested file
 fn parse_message(raw_message: Vec<String>) -> String {
+    raw_message[0]
+        .split_whitespace()
+        .nth(1)
+        .unwrap()
+        .to_string()
+}
+
+fn generate_response_message(parsed_message: String) -> String {
+    // open file with the passed String or the above <- study
+    let mut file = File::open(parsed_message).unwrap(); // check this one before
+
+    // create response specific message
+    let start_line = String::from("HTTP/1.1 200 OK");
+    let field_line = String::from("Connection: close");
+    let mut content = String::new();
+    let _ = file.read_to_string(&mut content);
+
+    println!("{content}");
+    format!("{start_line}\r\n{field_line}\r\n\r\n{content}")
+}
+
+fn send_message() {
     todo!()
 }
 
@@ -58,6 +85,7 @@ mod tests {
         println!("peeked message: {requested_method}");
         assert_eq!(requested_method, "GET".to_string());
     }
+
     #[test]
     fn message() {
         let listener = TcpListener::bind("127.0.0.1:8000").unwrap();
@@ -68,4 +96,27 @@ mod tests {
         let tester: String = request_message[0].chars().take(3).collect();
         assert_eq!("GET".to_string(), tester);
     }
+
+    #[test]
+    fn requested_file() {
+        let listener = TcpListener::bind("127.0.0.1:8000").unwrap();
+        let stream = accept_connection(listener);
+        let raw_message = get_message(stream);
+        
+        let parsed_message = parse_message(raw_message);
+
+        assert_eq!(parsed_message, "/hello_world.html");
+    }
+
+    #[test]
+    fn response_message() {
+        let listener = TcpListener::bind("127.0.0.1:8000").unwrap();
+        let stream = accept_connection(listener);
+        let raw_message = get_message(stream);
+        let parsed_message = parse_message(raw_message);
+
+        let response_message = generate_response_message(parsed_message);
+        println!("{response_message}");
+    }
+
 }
