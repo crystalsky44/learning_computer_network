@@ -3,6 +3,7 @@
 use std::io::{BufRead, BufReader, Read, Write};
 use std::fs::File;
 use std::net::{TcpListener, TcpStream};
+use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 
@@ -41,15 +42,24 @@ fn get_message(stream: TcpStream) -> Vec<String> {
 // gets the name of file requested of.
 // "parse" should be more complicated. But for this project
 // I'm just getting the string to call the requested file
-fn parse_message(raw_message: Vec<String>) -> String {
-    raw_message[0]
+fn parse_message(raw_message: Vec<String>) -> PathBuf {
+    let current_directory = std::env::current_dir().unwrap();
+    let mut path = PathBuf::from(current_directory);
+    println!("line after from: {}", path.display());
+    let request_target = raw_message[0]
         .split_whitespace()
         .nth(1)
-        .unwrap()
-        .to_string()
+        .unwrap();
+
+    path.push(request_target);
+    println!("Current working directory: {}",
+        std::env::current_dir().unwrap().display());
+    println!("after push: {}", path.display());
+
+    path
 }
 
-fn generate_response_message(parsed_message: String) -> String {
+fn generate_response_message(parsed_message: PathBuf) -> String {
     // open file with the passed String or the above <- study
     let mut file = File::open(parsed_message).unwrap(); // check this one before
 
@@ -105,7 +115,7 @@ mod tests {
         
         let parsed_message = parse_message(raw_message);
 
-        assert_eq!(parsed_message, "/hello_world.html");
+        assert_eq!(parsed_message, PathBuf::from("/hello_world.html"));
     }
 
     #[test]
