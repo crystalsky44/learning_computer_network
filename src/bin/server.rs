@@ -32,6 +32,7 @@ fn run(listener: TcpListener) -> Result<String> {
     // accept connection request
     let stream = accept_connection(listener);
     //
+
     // read the byte stream
     let raw_message = get_message(stream);
     //

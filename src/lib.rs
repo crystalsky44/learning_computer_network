@@ -43,15 +43,13 @@ fn get_message(stream: TcpStream) -> Vec<String> {
 // "parse" should be more complicated. But for this project
 // I'm just getting the string to call the requested file
 fn parse_message(raw_message: Vec<String>) -> PathBuf {
-    let current_directory = std::env::current_dir().unwrap();
-    let mut path = PathBuf::from(current_directory);
-    println!("line after from: {}", path.display());
-    let request_target = raw_message[0]
+    let mut request_target = raw_message[0]
         .split_whitespace()
         .nth(1)
         .unwrap();
 
-    path.push(request_target);
+    request_target = &request_target[1..];
+    let mut path = PathBuf::from(request_target);
     println!("Current working directory: {}",
         std::env::current_dir().unwrap().display());
     println!("after push: {}", path.display());
@@ -73,8 +71,8 @@ fn generate_response_message(parsed_message: PathBuf) -> String {
     format!("{start_line}\r\n{field_line}\r\n\r\n{content}")
 }
 
-fn send_message() {
-    todo!()
+fn send_message(mut stream: TcpStream, response_message: String) {
+    stream.write_all(response_message.as_bytes()).unwrap();
 }
 
 #[cfg(test)]
@@ -129,4 +127,15 @@ mod tests {
         println!("{response_message}");
     }
 
+    #[test]
+    fn test_send_message() {
+        let listener = TcpListener::bind("127.0.0.1:8000").unwrap();
+        let stream = accept_connection(listener);
+        let mut write_stream = stream.try_clone().unwrap();
+        let raw_message = get_message(stream);
+        let parsed_message = parse_message(raw_message);
+        let response_message = generate_response_message(parsed_message);
+
+        send_message(write_stream, response_message);
+    }
 }
