@@ -7,23 +7,25 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 
-fn run(listener: TcpListener) {
-    // accept connection request
-    let mut stream = accept_connection(listener);
+fn run(listener: &mut TcpListener) {
+    loop{
+        // accept connection request
+        let mut stream = accept_connection(listener);
 
-    // retrieve a client message
-    let raw_message = get_message(&mut stream);
+        // retrieve a client message
+        let raw_message = get_message(&mut stream);
 
-    // parse message (it's just getting the path to the file...)
-    let parsed_message = parse_message(raw_message);
+        // parse message (it's just getting the path to the file...)
+        let parsed_message = parse_message(raw_message);
 
-    // generate response message
-    let response_message = generate_response_message(parsed_message);
+        // generate response message
+        let response_message = generate_response_message(parsed_message);
 
-    send_message(stream, response_message);
+        send_message(stream, response_message);
+    }
 }
 
-fn accept_connection(listener: TcpListener) -> TcpStream {
+fn accept_connection(listener: &mut TcpListener) -> TcpStream {
     let (stream, address) = listener.accept().unwrap();
     println!("Connected to {address}");
     stream
@@ -87,7 +89,7 @@ mod tests {
 
     #[test]
     fn http_test() {
-        let listener = TcpListener::bind("127.0.0.1:8000").unwrap();
-        run(listener);
+        let mut listener = TcpListener::bind("127.0.0.1:8000").unwrap();
+        run(&mut listener);
     }
 }
