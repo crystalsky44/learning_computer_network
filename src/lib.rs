@@ -57,20 +57,26 @@ fn parse_message(raw_message: Vec<String>) -> PathBuf {
         .unwrap();
 
     request_target = &request_target[1..];
-    let mut path = PathBuf::from(request_target);
+    let path = PathBuf::from(request_target);
     println!("Current working directory: {}",
         std::env::current_dir().unwrap().display());
     println!("after push: {}", path.display());
-
     path
 }
 
-fn generate_response_message(parsed_message: PathBuf) -> String {
-    // open file with the passed String or the above <- study
-    let mut file = File::open(parsed_message).unwrap(); // check this one before
+fn generate_response_message(mut parsed_message: PathBuf) -> String {
+    let mut start_line = String::from("HTTP/1.1 200 OK");
+
+    // returns path if the content of path is "hello_world.html"
+    if "hello_world.html".to_string() != parsed_message {
+        start_line = String::from("HTTP/1.1 404 Not Found");
+        parsed_message = PathBuf::from("notfound.html");
+    }
+    // open file with the passed String or the above 
+    let mut file = File::open(parsed_message).unwrap();
+        
 
     // create response specific message
-    let start_line = String::from("HTTP/1.1 200 OK");
     let field_line = String::from("Connection: close");
     let mut content = String::new();
     let _ = file.read_to_string(&mut content);
