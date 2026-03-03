@@ -1,4 +1,4 @@
-#[warn(clippy::pedantic)]
+#![warn(clippy::pedantic)]
 /// server side
 use std::io::{BufRead, BufReader, Read, Write};
 use std::fs::File;
@@ -7,22 +7,27 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 
-fn run(listener: &mut TcpListener) {
-    loop{
-        // accept connection request
-        let mut stream = accept_connection(listener);
-
-        // retrieve a client message
-        let raw_message = get_message(&mut stream);
-
-        // parse message (it's just getting the path to the file...)
-        let parsed_message = parse_message(raw_message);
-
-        // generate response message
-        let response_message = generate_response_message(parsed_message);
-
-        send_message(stream, response_message);
+pub fn run(listener: TcpListener) {
+    // accept connections and process them serially
+    for mut stream in listener.incoming() {
+        match stream {
+            Ok(mut stream) => handle_client(&mut stream),
+            Err(_) => println!("connection failed"),
+        }
     }
+}
+
+fn handle_client(stream: &mut TcpStream) {
+    // retrieve a client message
+    let raw_message = get_message(stream);
+
+    // parse message (it's just getting the path to the file...)
+    let parsed_message = parse_message(raw_message);
+
+    // generate response message
+    let response_message = generate_response_message(parsed_message);
+
+    send_message(stream, response_message);
 }
 
 fn accept_connection(listener: &mut TcpListener) -> TcpStream {
@@ -85,7 +90,7 @@ fn generate_response_message(mut parsed_message: PathBuf) -> String {
     format!("{start_line}\r\n{field_line}\r\n\r\n{content}")
 }
 
-fn send_message(mut stream: TcpStream, response_message: String) {
+fn send_message(stream: &mut TcpStream, response_message: String) {
     stream.write_all(response_message.as_bytes()).unwrap();
 }
 
