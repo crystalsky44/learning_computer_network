@@ -1,7 +1,7 @@
 #![warn(clippy::pedantic)]
+use std::fs::File;
 /// server side
 use std::io::{BufRead, BufReader, Read, Write};
-use std::fs::File;
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 
@@ -30,12 +30,6 @@ fn handle_client(stream: &mut TcpStream) {
     send_message(stream, response_message);
 }
 
-fn accept_connection(listener: &mut TcpListener) -> TcpStream {
-    let (stream, address) = listener.accept().unwrap();
-    println!("Connected to {address}");
-    stream
-}
-
 // retrieves a client sent message
 fn get_message(stream: &mut TcpStream) -> Vec<String> {
     // buff the client message
@@ -43,7 +37,7 @@ fn get_message(stream: &mut TcpStream) -> Vec<String> {
 
     // convert the buffed byte data into Vec<String>
     let request_message: Vec<String> = reader
-        .lines() 
+        .lines()
         .map(|line| line.unwrap())
         .take_while(|line| !line.is_empty())
         .collect();
@@ -54,17 +48,20 @@ fn get_message(stream: &mut TcpStream) -> Vec<String> {
 
 // gets the name of file requested of.
 // "parse" should be more complicated. But for this project
-// I'm just getting the string to call the requested file
+// I'm just getting the name of the file requested
 fn parse_message(raw_message: Vec<String>) -> PathBuf {
-    let mut request_target = raw_message[0]
-        .split_whitespace()
-        .nth(1)
-        .unwrap();
+    // I am wondering if this should be the function that handles error...
+    // Should there be a function that's specfically desined to handle
+    // errors?
+    //
+    let mut request_target = raw_message[0].split_whitespace().nth(1).unwrap();
 
     request_target = &request_target[1..];
     let path = PathBuf::from(request_target);
-    println!("Current working directory: {}",
-        std::env::current_dir().unwrap().display());
+    println!(
+        "Current working directory: {}",
+        std::env::current_dir().unwrap().display()
+    );
     println!("after push: {}", path.display());
     path
 }
@@ -77,9 +74,8 @@ fn generate_response_message(mut parsed_message: PathBuf) -> String {
         start_line = String::from("HTTP/1.1 404 Not Found");
         parsed_message = PathBuf::from("notfound.html");
     }
-    // open file with the passed String or the above 
+    // open file with the passed String or the above
     let mut file = File::open(parsed_message).unwrap();
-        
 
     // create response specific message
     let field_line = String::from("Connection: close");
